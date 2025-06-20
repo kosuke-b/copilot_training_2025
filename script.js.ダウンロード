@@ -1,0 +1,109 @@
+document.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+
+    const sections = document.querySelectorAll('.content-section');
+    const navLinks = document.querySelectorAll('#nav-menu a');
+    const sidebar = document.getElementById('sidebar');
+
+
+    const introLink = document.querySelector('a[href="#intro"]');
+    if (introLink) {
+        introLink.classList.add('active');
+    }
+
+    if (sidebar) {
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    }
+
+    const sectionObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, {
+        root: null,
+        threshold: 0.1
+    });
+
+    sections.forEach(section => {
+        sectionObserver.observe(section);
+    });
+
+    const navObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.getAttribute('id');
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${id}`) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, { 
+        rootMargin: '-30% 0px -70% 0px',
+        threshold: 0
+    });
+
+    sections.forEach(section => {
+        navObserver.observe(section);
+    });
+
+    const copyButtons = document.querySelectorAll('.copy-btn');
+    copyButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetSelector = button.getAttribute('data-clipboard-target');
+            const content = document.querySelector(targetSelector).innerText;
+            
+            navigator.clipboard.writeText(content).then(() => {
+                const copyTextSpan = button.querySelector('.copy-text');
+                const originalText = copyTextSpan.textContent;
+                const icon = button.querySelector('i');
+                
+                copyTextSpan.textContent = 'コピー完了!';
+                icon.setAttribute('data-lucide', 'check');
+                
+
+                const iconElement = icon;
+                iconElement.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>';
+
+                
+button.classList.add('bg-green-500');
+
+                setTimeout(() => {
+                    copyTextSpan.textContent = originalText;
+                    icon.setAttribute('data-lucide', 'copy');
+                    
+
+                    iconElement.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+                    
+                    button.classList.remove('bg-green-500');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                
+
+                const copyTextSpan = button.querySelector('.copy-text');
+                const originalText = copyTextSpan.textContent;
+                copyTextSpan.textContent = '手動でコピーしてください';
+                
+                setTimeout(() => {
+                    copyTextSpan.textContent = originalText;
+                }, 3000);
+            });
+        });
+    });
+});
